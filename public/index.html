@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta Anónima · Cadetes</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, 'Segoe UI', 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0f4fa 0%, #d9e2ef 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        .card {
+            background: white;
+            border-radius: 2rem;
+            padding: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        h1 { font-size: 1.9rem; margin-bottom: 0.5rem; color: #1e293b; }
+        .anon-badge {
+            background: #e6f0ff;
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 1rem;
+        }
+        .form-group { margin-bottom: 1.2rem; }
+        label { font-weight: 600; display: block; margin-bottom: 0.4rem; color: #0c4a6e; }
+        input, textarea {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 1rem;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+        textarea { min-height: 90px; resize: vertical; }
+        button {
+            background: #0f2b3d;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:hover { background: #1e4a6e; transform: translateY(-2px); }
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid #3b82f6;
+            color: #1e40af;
+        }
+        .btn-outline:hover { background: #eef2ff; }
+        .actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-top: 1rem; }
+        .success-msg, .error-msg { padding: 0.8rem; border-radius: 1rem; margin-top: 1rem; display: none; }
+        .success-msg { background: #dcfce7; color: #15803d; }
+        .error-msg { background: #fee2e2; color: #b91c1c; }
+        .feedback-card {
+            background: #fefefe;
+            border-left: 5px solid #3b82f6;
+            border-radius: 1.2rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .feedback-meta { font-size: 0.7rem; color: #6c757d; margin-bottom: 0.5rem; }
+        .feedback-question { font-weight: 700; font-size: 0.8rem; margin-top: 0.5rem; color: #2c3e66; }
+        .feedback-answer { background: #f8fafc; padding: 0.4rem 0.8rem; border-radius: 1rem; margin-bottom: 0.3rem; }
+        .empty-state { text-align: center; padding: 2rem; background: #f1f5f9; border-radius: 1.5rem; }
+        .loader { border: 3px solid #e2e8f0; border-top: 3px solid #2c3e50; border-radius: 50%; width: 32px; height: 32px; animation: spin 0.8s linear infinite; margin: 1rem auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .footer-note { text-align: center; font-size: 0.75rem; color: #5b6e8c; margin-top: 1.5rem; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="formSection">
+        <div class="card">
+            <div class="anon-badge">🔒 TU OPINIÓN ES COMPLETAMENTE ANÓNIMA</div>
+            <h1>📋 Consulta al cadete</h1>
+            <form id="feedbackForm">
+                <div class="form-group">
+                    <label>🌟 ¿Cómo estuvo tu día?</label>
+                    <input type="text" id="diaInput" placeholder="Ej: Muy productivo, regular, cansado...">
+                </div>
+                <div class="form-group">
+                    <label>⚠️ ¿Tuviste algún problema?</label>
+                    <textarea id="problemaInput" placeholder="Cuéntanos si algo te afectó..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>💬 ¿Quieres contarnos algo?</label>
+                    <textarea id="cuentanosInput" placeholder="Sugerencias, ideas..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>🏛️ ¿Qué cambiarías de la institución?</label>
+                    <textarea id="cambiariaInput" placeholder="Mejoras, procesos, ambiente..."></textarea>
+                </div>
+                <div class="actions">
+                    <button type="submit">✉️ Enviar consulta anónima</button>
+                    <button type="button" id="dashboardBtn" class="btn-outline">📊 Dashboard (Admin)</button>
+                </div>
+                <div id="formMessage" class="success-msg"></div>
+            </form>
+            <div class="footer-note">✅ Tus datos nunca se asocian a tu identidad.</div>
+        </div>
+    </div>
+
+    <div id="dashboardSection" style="display: none;">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>📋 Panel de comentarios anónimos</h2>
+                <button id="backToFormBtn" class="btn-outline">← Volver</button>
+            </div>
+            <div id="dashboardContent">
+                <div class="loader"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const formSection = document.getElementById('formSection');
+    const dashboardSection = document.getElementById('dashboardSection');
+    const dashboardBtn = document.getElementById('dashboardBtn');
+    const backBtn = document.getElementById('backToFormBtn');
+    const feedbackForm = document.getElementById('feedbackForm');
+    const formMessage = document.getElementById('formMessage');
+
+    function showMessage(msg, isError = false) {
+        formMessage.textContent = msg;
+        formMessage.className = isError ? 'error-msg' : 'success-msg';
+        formMessage.style.display = 'block';
+        setTimeout(() => formMessage.style.display = 'none', 4000);
+    }
+
+    feedbackForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {
+            dia: document.getElementById('diaInput').value.trim(),
+            problema: document.getElementById('problemaInput').value.trim(),
+            cuentanos: document.getElementById('cuentanosInput').value.trim(),
+            cambiaria: document.getElementById('cambiariaInput').value.trim()
+        };
+        if (!data.dia && !data.problema && !data.cuentanos && !data.cambiaria) {
+            showMessage('Completa al menos un campo, tu opinión importa.', true);
+            return;
+        }
+        const submitBtn = feedbackForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '⏳ Enviando...';
+        submitBtn.disabled = true;
+        try {
+            const res = await fetch('/api/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (result.success) {
+                showMessage('✅ ¡Gracias! Tu opinión anónima ha sido registrada.');
+                feedbackForm.reset();
+            } else {
+                showMessage('❌ Error al guardar. Intenta de nuevo.', true);
+            }
+        } catch (err) {
+            showMessage('Error de conexión con el servidor.', true);
+        } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+
+    async function loadDashboard() {
+        const dashboardContent = document.getElementById('dashboardContent');
+        dashboardContent.innerHTML = '<div class="loader"></div><p style="text-align:center;">Cargando comentarios...</p>';
+        try {
+            const res = await fetch('/api/feedbacks');
+            const feedbacks = await res.json();
+            if (!feedbacks.length) {
+                dashboardContent.innerHTML = '<div class="empty-state">📭 Aún no hay comentarios anónimos.</div>';
+                return;
+            }
+            let html = `<p><strong>${feedbacks.length}</strong> opiniones anónimas</p>`;
+            feedbacks.forEach(fb => {
+                const fecha = new Date(fb.created_at).toLocaleString('es-AR');
+                html += `
+                    <div class="feedback-card">
+                        <div class="feedback-meta">🕒 ${fecha} · 🔒 Anónimo</div>
+                        ${fb.dia ? `<div class="feedback-question">🌟 ¿Cómo estuvo tu día?</div><div class="feedback-answer">${escapeHtml(fb.dia)}</div>` : ''}
+                        ${fb.problema ? `<div class="feedback-question">⚠️ ¿Tuviste algún problema?</div><div class="feedback-answer">${escapeHtml(fb.problema)}</div>` : ''}
+                        ${fb.cuentanos ? `<div class="feedback-question">💬 ¿Quieres contarnos algo?</div><div class="feedback-answer">${escapeHtml(fb.cuentanos)}</div>` : ''}
+                        ${fb.cambiaria ? `<div class="feedback-question">🏛️ ¿Qué cambiarías de la institución?</div><div class="feedback-answer">${escapeHtml(fb.cambiaria)}</div>` : ''}
+                    </div>
+                `;
+            });
+            dashboardContent.innerHTML = html;
+        } catch (err) {
+            dashboardContent.innerHTML = '<div class="empty-state">❌ Error al cargar comentarios.</div>';
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    dashboardBtn.addEventListener('click', () => {
+        const pwd = prompt('🔐 Acceso restringido. Ingrese la contraseña:');
+        if (pwd === 'naty') {
+            formSection.style.display = 'none';
+            dashboardSection.style.display = 'block';
+            loadDashboard();
+        } else if (pwd !== null) {
+            alert('Contraseña incorrecta.');
+        }
+    });
+
+    backBtn.addEventListener('click', () => {
+        dashboardSection.style.display = 'none';
+        formSection.style.display = 'block';
+    });
+</script>
+</body>
+</html>
